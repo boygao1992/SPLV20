@@ -156,8 +156,9 @@ mutual
               (skip : Grammar tok True s) ->
               (p : Grammar tok c a) ->
               Grammar tok True a
-  afterSome skip p = do skip
-                        afterMany skip p
+  afterSome skip p = do
+    ignore skip
+    afterMany skip p
 
   ||| Parse zero or more instance of `skip` until `p` is encountered,
   ||| returning its value.

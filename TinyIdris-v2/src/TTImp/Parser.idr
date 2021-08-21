@@ -141,7 +141,7 @@ mutual
            commit
            ns <- sepBy1 (symbol ",") unqualifiedName
            let binders = map (\n => (Just (UN n), Implicit)) ns
-           symbol "."
+           discard <- symbol "."
            scope <- typeExpr fname indents
            pure (pibindAll Implicit binders scope)
 

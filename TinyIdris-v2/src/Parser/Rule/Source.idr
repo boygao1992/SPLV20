@@ -21,7 +21,7 @@ SourceEmptyRule = EmptyRule Token
 export
 eoi : SourceEmptyRule ()
 eoi
-    = do nextIs "Expected end of input" (isEOI . tok)
+    = do ignore $ nextIs "Expected end of input" (isEOI . tok)
          pure ()
   where
     isEOI : Token -> Bool
@@ -237,7 +237,7 @@ export
 atEnd : (indent : IndentInfo) -> SourceEmptyRule ()
 atEnd indent
     = eoi
-  <|> do nextIs "Expected end of block" (isTerminator . tok)
+  <|> do ignore $ nextIs "Expected end of block" (isTerminator . tok)
          pure ()
   <|> do col <- Common.column
          if (col <= indent)

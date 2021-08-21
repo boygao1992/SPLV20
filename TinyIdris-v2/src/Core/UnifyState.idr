@@ -166,8 +166,8 @@ newConstant {vars} env tm ty constrs
          let defty = abstractEnvType env ty
          cn <- genName "postpone"
          let guess = newDef defty (Guess def constrs)
-         addDef cn guess
-         addGuessName cn
+         _ <- addDef cn guess
+         _ <- addGuessName cn
          pure (Meta cn envArgs)
   where
     envArgs : List (Term vars)

@@ -20,30 +20,30 @@ import System
 repl : {auto c : Ref Ctxt Defs} ->
        {auto u : Ref UST UState} ->
        Core ()
-repl = do coreLift $ putStr "> "
+repl = do _ <- coreLift $ putStr "> "
           inp <- coreLift getLine
           let Right ttexp = runParser Nothing inp (expr "(input)" init)
-              | Left err => do coreLift $ printLn err
+              | Left err => do _ <- coreLift $ printLn err
                                repl
           (tm, ty) <- checkTerm [] ttexp Nothing
-          coreLift $ putStrLn $ "Checked: " ++ show tm
+          _ <- coreLift $ putStrLn $ "Checked: " ++ show tm
           defs <- get Ctxt
-          coreLift $ putStrLn $ "Type: " ++ show !(normalise defs [] !(getTerm ty))
+          _ <- coreLift $ putStrLn $ "Type: " ++ show !(normalise defs [] !(getTerm ty))
           nf <- normalise defs [] tm
-          coreLift $ putStrLn $ "Evaluated: " ++ show nf
+          _ <- coreLift $ putStrLn $ "Evaluated: " ++ show nf
           repl
 
 runMain : List ImpDecl -> Core ()
 runMain decls
     = do c <- newRef Ctxt !initDefs
          u <- newRef UST initUState
-         traverse_ processDecl decls
+         _ <- traverse_ processDecl decls
          repl
 
 main : IO ()
 main = do [_, fname] <- getArgs
               | _ => putStrLn "Usage: tinyidris <filename>"
-          Right decls <- parseFile fname (do p <- prog fname; eoi; pure p)
+          Right decls <- parseFile fname (do p <- prog fname; _ <- eoi; pure p)
               | Left err => printLn err
           coreRun (runMain decls)
                   (\err => printLn err)

@@ -111,6 +111,10 @@ export %inline
                                Left err => pure (Left err)
                                Right val => runCore (f val)))
 
+export %inline
+(>>) : Core () -> Core a -> Core a
+ma >> mb = ma >>= const mb
+
 -- Applicative (specialised)
 export %inline
 pure : a -> Core a
@@ -169,7 +173,7 @@ export
 traverse_ : (a -> Core b) -> List a -> Core ()
 traverse_ f [] = pure ()
 traverse_ f (x :: xs)
-    = do f x
+    = do _ <- f x
          traverse_ f xs
 
 export

@@ -33,6 +33,14 @@ data Grammar : (tok : Type) -> (consumes : Bool) -> Type -> Type where
      Alt : {c1, c2 : Bool} ->
            Grammar tok c1 ty -> Lazy (Grammar tok c2 ty) ->
            Grammar tok (c1 && c2) ty
+     ThenEat : {c2 : _} ->
+               Grammar tok True () ->
+               Inf (Grammar tok c2 b) ->
+               Grammar tok True b
+     ThenEmpty : {c1, c2 : _} ->
+                 Grammar tok c1 () ->
+                 Grammar tok c2 b ->
+                 Grammar tok (c1 || c2) b
 
 ||| Sequence two grammars. If either consumes some input, the sequence is
 ||| guaranteed to consume some input. If the first one consumes input, the
@@ -45,6 +53,18 @@ export %inline
         Grammar tok (c1 || c2) b
 (>>=) {c1 = False} = SeqEmpty
 (>>=) {c1 = True}  = SeqEat
+
+||| Sequence two grammars. If either consumes some input, the sequence is
+||| guaranteed to consume some input. If the first one consumes input, the
+||| second is allowed to be recursive (because it means some input has been
+||| consumed and therefore the input is smaller)
+public export %inline %tcinline
+(>>) : {c1, c2 : Bool} ->
+  Grammar tok c1 () ->
+  inf c1 (Grammar tok c2 a) ->
+  Grammar tok (c1 || c2) a
+(>>) {c1 = False} = ThenEmpty
+(>>) {c1 = True} = ThenEat
 
 ||| Sequence two grammars. If either consumes some input, the sequence is
 ||| guaranteed to consume input. This is an explicitly non-infinite version
@@ -89,6 +109,10 @@ Functor (Grammar tok c) where
   -- The remaining constructors (NextIs, EOF, Commit) have a fixed type,
   -- so a sequence must be used.
   map {c = False} f p = SeqEmpty p (Empty . f)
+  map f (ThenEat act next)
+    = ThenEat act (map f next)
+  map f (ThenEmpty act next)
+    = ThenEmpty act (map f next)
 
 ||| Sequence a grammar with value type `a -> b` and a grammar
 ||| with value type `a`. If both succeed, apply the function
@@ -130,8 +154,14 @@ mapToken f EOF = EOF
 mapToken f (Fail fatal msg) = Fail fatal msg
 mapToken f (MustWork g) = MustWork (mapToken f g)
 mapToken f Commit = Commit
-mapToken f (SeqEat act next) = SeqEat (mapToken f act) (\x => mapToken f (next x))
-mapToken f (SeqEmpty act next) = SeqEmpty (mapToken f act) (\x => mapToken f (next x))
+mapToken f (SeqEat act next)
+  = SeqEat (mapToken f act) (\x => mapToken f (next x))
+mapToken f (SeqEmpty act next)
+  = SeqEmpty (mapToken f act) (\x => mapToken f (next x))
+mapToken f (ThenEat act next)
+  = ThenEat (mapToken f act) (mapToken f next)
+mapToken f (ThenEmpty act next)
+  = ThenEmpty (mapToken f act) (mapToken f next)
 mapToken f (Alt x y) = Alt (mapToken f x) (mapToken f y)
 
 ||| Always succeed with the given value.
@@ -237,6 +267,20 @@ mutual
                    case assert_total (doParse com (next val) xs) of
                         Failure com' fatal msg ts => Failure com' fatal msg ts
                         Res com' val xs => Res com' val xs
+  doParse com (ThenEmpty {c1} {c2} act next) xs
+    = let p' = assert_total (doParse {c = c1} com act xs) in
+              case p' of
+               Failure com fatal msg ts => Failure com fatal msg ts
+               Res com val more =>
+                     case (assert_total (doParse com next more)) of
+                          Failure com' fatal msg ts => Failure com' fatal msg ts
+                          Res com' val more' =>
+                               Res com' val more'
+  doParse com (ThenEat act next) xs with (doParse com act xs)
+    doParse com (ThenEat act next) xs | Failure com' fatal msg ts
+      = Failure com' fatal msg ts
+    doParse com (ThenEat act next) xs | (Res com' val more)
+      = assert_total (doParse com' next more)
 
 public export
 data ParsingError tok = Error String (List tok)
