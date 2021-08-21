@@ -12,9 +12,11 @@ import public Text.Token
 
 ||| Parse a terminal based on a kind of token.
 export
-match : (Eq k, TokenKind k) =>
-        (kind : k) ->
-        Grammar (Token k) True (TokType kind)
+match :
+  {k : _} ->
+  (Eq k, TokenKind k) =>
+  (kind : k) ->
+  Grammar (Token k) True (TokType kind)
 match kind = terminal "Unrecognised input" $
   \(Tok kind' text) => if kind' == kind
                           then Just $ tokValue kind text

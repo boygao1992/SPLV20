@@ -28,20 +28,24 @@ revNs (v :: vs) ns
 -- in big environments
 -- Also reversing the names at the end saves significant time over concatenating
 -- when environments get fairly big.
-getBinderUnder : Weaken tm =>
-                 {vars : _} -> {idx : Nat} ->
-                 (ns : List Name) ->
-                 (0 p : IsVar x idx vars) -> Env tm vars ->
-                 Binder (tm (reverseOnto vars ns))
+getBinderUnder :
+  {tm : _} ->
+  Weaken tm =>
+  {vars : _} -> {idx : Nat} ->
+  (ns : List Name) ->
+  (0 p : IsVar x idx vars) -> Env tm vars ->
+  Binder (tm (reverseOnto vars ns))
 getBinderUnder {idx = Z} {vars = v :: vs} ns First (b :: env)
     = rewrite revOnto vs (v :: ns) in map (weakenNs (reverse (v :: ns))) b
 getBinderUnder {idx = S k} {vars = v :: vs} ns (Later lp) (b :: env)
     = getBinderUnder (v :: ns) lp env
 
 export
-getBinder : Weaken tm =>
-            {vars : _} -> {idx : Nat} ->
-            (0 p : IsVar x idx vars) -> Env tm vars -> Binder (tm vars)
+getBinder :
+  {tm : _} ->
+  Weaken tm =>
+  {vars : _} -> {idx : Nat} ->
+  (0 p : IsVar x idx vars) -> Env tm vars -> Binder (tm vars)
 getBinder el env = getBinderUnder [] el env
 
 public export

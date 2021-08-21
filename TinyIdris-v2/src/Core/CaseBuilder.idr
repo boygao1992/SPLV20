@@ -52,7 +52,7 @@ data NamedPats : List Name -> -- pattern variables still to process
                               -- in order
                  Type where
      Nil : NamedPats vars []
-     (::) : PatInfo pvar vars ->
+     (::) : {pvar: _} -> PatInfo pvar vars ->
             -- ^ a pattern, where its variable appears in the vars list,
             -- and its type. The type has no variable names; any names it
             -- refers to are explicit
@@ -131,7 +131,7 @@ Weaken ArgType where
   weaken (Stuck fty) = Stuck (weaken fty)
   weaken Unknown = Unknown
 
-Weaken (PatInfo p) where
+{p: _} -> Weaken (PatInfo p) where
   weaken (MkInfo p el fty) = MkInfo p (Later el) (weaken fty)
 
 -- FIXME: perhaps 'vars' should be second argument so we can use Weaken interface
@@ -522,11 +522,11 @@ pickNext {ps = q :: qs} fn npss
                     _ => do (_ ** MkNVar var) <- pickNext fn (map tail npss)
                             pure (_ ** MkNVar (Later var))
 
-moveFirst : {idx : Nat} -> (0 el : IsVar name idx ps) -> NamedPats ns ps ->
+moveFirst : {name: _} -> {idx : Nat} -> (0 el : IsVar name idx ps) -> NamedPats ns ps ->
             NamedPats ns (name :: dropVar ps el)
 moveFirst el nps = getPat el nps :: dropPat el nps
 
-shuffleVars : {idx : Nat} -> (0 el : IsVar name idx todo) -> PatClause vars todo ->
+shuffleVars : {name: _} -> {idx : Nat} -> (0 el : IsVar name idx todo) -> PatClause vars todo ->
               PatClause vars (name :: dropVar todo el)
 shuffleVars el (MkPatClause pvars lhs rhs)
     = MkPatClause pvars (moveFirst el lhs) rhs

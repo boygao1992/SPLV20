@@ -50,13 +50,15 @@ solvedHole = MkUnifyResult [] True
 ufail : String -> Core a
 ufail msg = throw (GenericMsg msg)
 
-unifyArgs : (Unify tm, Quote tm) =>
-            {vars : _} ->
-            {auto c : Ref Ctxt Defs} ->
-            {auto u : Ref UST UState} ->
-            Env Term vars ->
-            List (tm vars) -> List (tm vars) ->
-            Core UnifyResult
+unifyArgs :
+  {tm : _} ->
+  (Unify tm, Quote tm) =>
+  {vars : _} ->
+  {auto c : Ref Ctxt Defs} ->
+  {auto u : Ref UST UState} ->
+  Env Term vars ->
+  List (tm vars) -> List (tm vars) ->
+  Core UnifyResult
 unifyArgs env [] [] = pure success
 unifyArgs env (cx :: cxs) (cy :: cys)
     = do -- Do later arguments first, since they may depend on earlier
@@ -178,7 +180,7 @@ data IVars : List Name -> List Name -> Type where
      ICons : Maybe (Var newvars) -> IVars vs newvars ->
              IVars (v :: vs) newvars
 
-Weaken (IVars vs) where
+{vs: _} -> Weaken (IVars vs) where
   weaken INil = INil
   weaken (ICons Nothing ts) = ICons Nothing (weaken ts)
   weaken (ICons (Just t) ts) = ICons (Just (weaken t)) (weaken ts)
