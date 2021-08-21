@@ -27,6 +27,7 @@ import Text.Lexer
 
 import Data.List
 import Data.List.Views
+import Data.List1
 import Data.Strings
 
 %default total
@@ -68,7 +69,7 @@ reduce (MkToken _ _ _ _ (Any x) :: rest) acc = reduce rest (blank_content::acc)
   where
     -- Preserve the original document's line count.
     blank_content : String
-    blank_content = fastAppend (replicate (length (lines x)) "\n")
+    blank_content = fastAppend (replicate (length (Data.List1.forget (lines x))) "\n")
 
 reduce (MkToken _ _ _ _ (CodeLine m src) :: rest) acc =
     if m == trim src
@@ -78,7 +79,7 @@ reduce (MkToken _ _ _ _ (CodeLine m src) :: rest) acc =
                               src
                       )::acc)
 
-reduce (MkToken _ _ _ _ (CodeBlock l r src) :: rest) acc with (lines src) -- Strip the deliminators surrounding the block.
+reduce (MkToken _ _ _ _ (CodeBlock l r src) :: rest) acc with (Data.List1.forget (lines src)) -- Strip the deliminators surrounding the block.
   reduce (MkToken _ _ _ _ (CodeBlock l r src) :: rest) acc | [] = reduce rest acc -- 1
   reduce (MkToken _ _ _ _ (CodeBlock l r src) :: rest) acc | (s :: ys) with (snocList ys)
     reduce (MkToken _ _ _ _ (CodeBlock l r src) :: rest) acc | (s :: []) | Empty = reduce rest acc -- 2
