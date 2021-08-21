@@ -67,7 +67,7 @@ join {c1 = True} p = SeqEat p id
 ||| Give two alternative grammars. If both consume, the combination is
 ||| guaranteed to consume.
 export %inline
-(<|>) : {c1,c2 : Bool} -> 
+(<|>) : {c1,c2 : Bool} ->
         Grammar tok c1 ty ->
         Lazy (Grammar tok c2 ty) ->
         Grammar tok (c1 && c2) ty
@@ -187,9 +187,9 @@ data ParseResult : Type -> Type -> Type where
            (val : ty) -> (more : List tok) -> ParseResult tok ty
 
 mutual
-  doParse : (commit : Bool) -> 
+  doParse : (commit : Bool) ->
             (act : Grammar tok c ty) ->
-            (xs : List tok) -> 
+            (xs : List tok) ->
             ParseResult tok ty
   doParse com (Empty val) xs = Res com val xs
   doParse com (Fail fatal str) [] = Failure com fatal str []

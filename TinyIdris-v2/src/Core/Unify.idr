@@ -304,7 +304,7 @@ mutual
                        empty <- clearDefs defs
                        tm <- quote empty env tmnf
                        case shrinkTerm tm submv of
-                            Nothing => 
+                            Nothing =>
                               -- Not well scoped, but it might be if we
                               -- normalise (TODO: Exercise)
                               postpone env (NApp (NMeta n margs) fargs) tmnf
@@ -396,7 +396,7 @@ retryGuess n
     = do defs <- get Ctxt
          case !(lookupDef n defs) of
               Nothing => pure False
-              Just gdef => 
+              Just gdef =>
                 case definition gdef of
                      Guess tm cs =>
                         do cs' <- traverse retry cs

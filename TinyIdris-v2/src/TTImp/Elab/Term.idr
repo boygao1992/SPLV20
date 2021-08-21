@@ -39,7 +39,7 @@ checkExp env term got (Just exp)
                       ctm <- newConstant env term cty cs
                       pure (ctm, got)
 
--- Check a raw term, given (possibly) the current environment and its expected 
+-- Check a raw term, given (possibly) the current environment and its expected
 -- type, if known.
 -- Returns a pair of checked term and its type.
 -- A type is 'Glued', that is, a pair of a term and its normal form, though

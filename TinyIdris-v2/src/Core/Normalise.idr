@@ -39,7 +39,7 @@ data CaseResult a
      = Result a
      | NoMatch -- case alternative didn't match anything
      | GotStuck -- alternative matched, but got stuck later
- 
+
 -- So that we can call 'eval' with new defs
 evalTop : {free, vars : _} ->
           Defs -> Env Term free -> LocalEnv free vars ->
